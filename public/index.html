@@ -1,0 +1,193 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+	<style>
+		body
+		{
+			background-color : lightblue;
+			overflow: hidden;
+		}
+		#titleBar
+		{
+			width:100%;
+			height:30px;
+			background-color:green;
+		}
+		button
+		{
+			position: relative;
+			float: right;
+			top: 15%;
+		}
+		#panel .title
+		{
+			text-align:center;
+			padding-left: 0px;
+		}
+		#panel
+		{
+			width: 20%;
+			height: 100%;
+			background-color: aliceblue;
+			position: absolute;
+			display: inline-block;
+		}
+		#widget
+		{
+			height: 50%;
+			background-color: red;
+			position: absolute;
+			left: 20%;
+			width: 78%;
+			margin-left: 20px;
+		}
+		#float
+		{
+			    float: left;
+				text-align: center;
+				width: 19%;
+				background-color: white;
+				margin-left: 10px;
+				border-radius: 10px;
+				margin-bottom: 30px;
+		}
+		#table
+		{
+			height: 50%;
+			position: absolute;
+			left: 20%;
+			width: 78%;
+			top: 50%;
+			margin-left: 20px;
+		}
+
+		.title
+		{
+			   height: 50px;
+				width: 100%;
+				background-color: blue;
+				color: white;
+				font-size: larger;
+				line-height: 50px;
+				padding-left: 11px;
+		}
+		#middleWidget
+		{
+			padding-top:10%;
+			width: 100%;
+			height: 70%;
+			background-color:aliceblue;
+			padding-left: 11px;
+		}
+		template
+		{
+			float:right;
+		}
+		#DataTable{
+		  table-layout: fixed;
+		}
+		
+		#DataTable td,
+		#DataTable th{
+		  width: auto !important;
+		  white-space: normal;
+		  text-overflow: ellipsis;
+		  overflow: hidden;
+		}
+	</style>
+
+    <link rel="stylesheet"  type="text/css"  href="jquery.dataTables.min.css"/>
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="dataTables.min.js"></script>
+	<script type="text/javascript" >
+
+		$(document).ready(function(){
+			$("#login").click(function(){
+				$("#login").css("display","none");
+				var temp =$("template")[0];
+				var clon = temp.content.cloneNode(true);
+				document.body.appendChild(clon);
+				
+				$("#sessionLogin").click(function(){
+					var credentials = { user: $("#userid").val(), pass: $("#psw").val()}
+					$.post("http://localhost:3000/login",credentials,function(data){
+					
+						$.get("http://localhost:3000/table",(Candidtes)=>{
+						console.log(Candidtes.data.length);
+						var total_candidates = Candidtes.data.length;
+						var front_End = 0;
+						var back_End = 0;
+						var cloud = 0;
+						var fullStack = 0;
+						var domains = [];
+						var domain_pair = {};
+						$("thead").append(`<tr><td>Candidte Id</td><td>Name</td><td>Domain</td><td>Years of Expe</td><td>Recruiter Name</td><td>Interview Type</td></tr>`)
+						for(var i=0 ; i< total_candidates; i++)
+						{
+							$("tbody").append(`<tr><td>${Candidtes.data[i].candidateId}</td><td>${Candidtes.data[i].name}</td><td>${Candidtes.data[i].domain}</td><td>${Candidtes.data[i].yearOfExperience}</td><td>${Candidtes.data[i].recruiterName}</td><td>${Candidtes.data[i].interviewType}</td></tr>`)
+							if(domain_pair[Candidtes.data[i].domain])
+								domain_pair[Candidtes.data[i].domain] += 1;
+							else
+								{
+									domains.push(Candidtes.data[i].domain);
+									domain_pair[Candidtes.data[i].domain] = 1;
+								}
+						}
+						
+						$("#middleWidget").append(`<div id="float"><div>Total Candidates</div> <div>${total_candidates}</div> <div>candidates</div></div>`)
+						for(var i = 0; i< domains.length; i++)
+						{
+							$("#middleWidget").append(`<div id="float"><div>${domains[i]}</div> <div>${domain_pair[domains[i]]}</div> <div>candidates</div></div>`)
+						}
+
+						$("#loginTemplate").css("display","none");
+						$("#logout").css("display","block");
+						$("#logout").click(function(){
+							$.post("http://localhost:3000/logout",credentials,function(data){
+								$.get("http://localhost:3000");
+							})
+						});
+						
+						$("#DataTable").DataTable({pageLength : 5, lengthChange: false});
+;					});
+				});
+			});
+
+			})
+		})
+	</script>
+	</head>
+	<body>
+		<template>	
+		<div style = "position: relative; top:40px; float:right" id="loginTemplate">		
+			<input style = "display:block" type="text" id="userid" placeholder="UserName">
+			<input style = "display:block" type="password" id="psw" placeholder="Password">
+			<button style = "display:block" id="sessionLogin">Login</button>
+		</div>
+		</template>
+		
+		<div id="titleBar">
+			<button id="login">login</button>
+			<button id="logout" style="display:none">logout</button>
+		</div>
+		<div id="panel"> 
+			<div class="title">Dashboard</div>
+		</div>
+		
+		<div id="widget">
+			<div class="title">Recruiter - Dashboard</div>
+			<div id="middleWidget"></div>
+		</div>
+		<div id ="table"> 
+			<div class="title">Scheduled List</div>
+			<div style="background-color:yellow; height:100%; width: 100.7%">
+				<table id="DataTable" class="cell-border hover" width="100%" cellspacing="0"> 
+					<thead>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
